@@ -3,7 +3,23 @@ package main
 import (
   "fmt"
   "encoding/json"
+  "net/http"
 )
+
+func roomHandler(w http.ResponseWriter, r *http.Request) {
+  name := r.URL.Path[len("/room/"):]
+  room, err := loadRoom(name)
+  if err != nil {
+    panic(err)
+  }
+
+  content, err := json.Marshal(room.Messages)
+  if err != nil {
+    panic(err)
+  }
+  
+  fmt.Fprintf(w, "<h1>%s</h1><div>%s<?div>", name, content)
+}
 
 func main() {
   u1 := &User{Login: "toto"}
@@ -25,4 +41,7 @@ func main() {
   }
 
   fmt.Println(json.Marshal(r2.Messages))
+
+  http.HandleFunc("/room/", roomHandler)
+  http.ListenAndServe(":8089", nil)
 }
